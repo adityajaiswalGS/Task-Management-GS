@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, TextField, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material';
+import ConfirmDialog from '../components/common/ConfirmDialog';  // Add this import!
+
 
 export default function TaskEditPage() {
-
-  const [openConfirm, setOpenConfirm] = useState(false);
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -19,28 +19,37 @@ export default function TaskEditPage() {
   const [tags, setTags] = useState('');
   const [completed, setCompleted] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title);
-      setSubtitle(task.subtitle);
+      setTitle(task.title || '');
+      setSubtitle(task.subtitle || '');
       setDate(task.date ? new Date(task.date).toISOString().slice(0, 16) : '');
-      setPriority(task.priority);
       setTags(task.tags ? task.tags.join(', ') : '');
-      setCompleted(task.completed);
-      setBookmarked(task.bookmarked);
+      setCompleted(task.completed || false);
+      setBookmarked(task.bookmarked || false);
+
+      // Map number priority to string label
+      const priorityMap = { 1: 'low', 2: 'medium', 3: 'high' };
+      setPriority(priorityMap[task.priority] || 'low');  // If DB has numbers, map to string
     }
   }, [task]);
 
   const handleUpdate = (e) => {
     e.preventDefault();
+
+    // Map string label back to number for DB
+    const priorityMap = { low: 1, medium: 2, high: 3 };
+    const numericPriority = priorityMap[priority] || 1;  // Default to low
+
     const updatedTask = {
       id,
       title,
       subtitle,
-      date: new Date(date).toISOString(),
-      priority,
-      tags: tags.split(',').map((tag) => tag.trim()),
+      date: date ? new Date(date).toISOString() : null,
+      priority: numericPriority,  // Send as number to DB
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       bookmarked,
       completed,
     };
@@ -103,22 +112,19 @@ export default function TaskEditPage() {
           Update Task
         </Button>
         <Button variant="outlined" color="error" onClick={() => setOpenConfirm(true)} sx={{ mt: 2, ml: 2 }}>
-  Delete Task
-</Button>
-<ConfirmDialog
-  open={openConfirm}
-  onClose={() => setOpenConfirm(false)}
-  onConfirm={() => {
-    handleDelete();
-    setOpenConfirm(false);
-  }}
-  title="Delete Task"
-  message="Are you sure you want to delete this task?"
-/>
-        <Button variant="outlined" color="error" onClick={handleDelete} sx={{ mt: 2, ml: 2 }}>
           Delete Task
         </Button>
       </Box>
+      <ConfirmDialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        onConfirm={() => {
+          handleDelete();
+          setOpenConfirm(false);
+        }}
+        title="Delete Task"
+        message="Are you sure you want to delete this task?"
+      />
     </Box>
   );
 }

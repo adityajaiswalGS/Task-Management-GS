@@ -10,6 +10,9 @@ import {
   Container,
   Alert,
 } from '@mui/material';
+import useSnackbar from '../hooks/useSnackbar';
+
+
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -18,6 +21,7 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+ useSnackbar();
 
   useEffect(() => {
     if (isAuthenticated) {

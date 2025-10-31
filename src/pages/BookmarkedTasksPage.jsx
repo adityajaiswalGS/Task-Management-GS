@@ -6,8 +6,8 @@ import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 export default function BookmarkedTasksPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { tasks, status, error } = useSelector((state) => state.tasks || { tasks: [], status: 'idle', error: null });
-  const bookmarkedTasks = tasks.filter((t) => t.bookmarked);
+  const { tasks = [] } = useSelector(state => state.tasks);
+  const bookmarked = tasks.filter(t => t.bookmarked);
 
   useEffect(() => {
     dispatch({ type: 'tasks/fetchRequest' });
@@ -16,18 +16,26 @@ export default function BookmarkedTasksPage() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Bookmarked Tasks
+        Bookmarked Tasks ({bookmarked.length})
       </Typography>
-      {status === 'loading' && <Typography>Loading...</Typography>}
-      {error && <Typography color="error">Error: {error}</Typography>}
-      {bookmarkedTasks.length === 0 && <Typography>No bookmarked tasks.</Typography>}
-      <List>
-        {bookmarkedTasks.map((task) => (
-          <ListItem key={task.id} onClick={() => navigate(`/tasks/${task.id}`)} sx={{ cursor: 'pointer' }}>
-            <ListItemText primary={task.title} secondary={task.subtitle} />
-          </ListItem>
-        ))}
-      </List>
+      {bookmarked.length === 0 ? (
+        <Typography>No bookmarked tasks.</Typography>
+      ) : (
+        <List>
+          {bookmarked.map(task => (
+            <ListItem
+              key={task.id}
+              onClick={() => navigate(`/tasks/${task.id}`)}
+              sx={{ cursor: 'pointer' }}
+            >
+              <ListItemText
+                primary={task.title}
+                secondary={task.subtitle}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
     </Box>
   );
 }

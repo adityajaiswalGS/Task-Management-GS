@@ -2,19 +2,22 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   tasks: [],
-  status: 'idle',  // 'idle' | 'loading' | 'succeeded' | 'failed'
+  status: 'idle',               // idle | loading | succeeded | failed
   error: null,
   filters: {
-    status: 'all',  // 'all' | 'completed' | 'pending'
-    priority: null,  // 'low' | 'medium' | 'high' | null
-    dueDate: null,   // Date string or null
-    search: '',      // For title/subtitle search
+    status: 'all',
+    priority: null,
+    dueDate: null,
+    search: '',
   },
-  sortBy: 'date',    // 'date' | 'priority'
-  pagination: {
-    page: 1,
-    limit: 5,        // Initial 5 tasks on dashboard
-  },
+  // ──> REMOVE THE DUPLICATES
+  // sortBy: 'date',           // <-- DELETE THIS LINE
+  // searchQuery: '',          // <-- DELETE THIS LINE
+  pagination: { page: 1, limit: 5 },
+
+  // ──> ADD THESE TWO FIELDS (they are the only source of truth)
+  searchQuery: '',
+  sortBy: 'date',               // 'date' | 'priority'
 };
 
 const tasksSlice = createSlice({
@@ -28,36 +31,24 @@ const tasksSlice = createSlice({
     addTask(state, action) {
       state.tasks.push(action.payload);
     },
-    loadMore(state) {
-    state.pagination.page += 1;
-  },
     updateTaskInList(state, action) {
-      const index = state.tasks.findIndex((t) => t.id === action.payload.id);
-      if (index !== -1) {
-        state.tasks[index] = action.payload;
-      }
+      const idx = state.tasks.findIndex(t => t.id === action.payload.id);
+      if (idx !== -1) state.tasks[idx] = action.payload;
     },
     removeTask(state, action) {
-      state.tasks = state.tasks.filter((t) => t.id !== action.payload);
+      state.tasks = state.tasks.filter(t => t.id !== action.payload);
     },
     toggleBookmark(state, action) {
-      const task = state.tasks.find((t) => t.id === action.payload);
-      if (task) {
-        task.bookmarked = !task.bookmarked;
-      }
+      const t = state.tasks.find(t => t.id === action.payload);
+      if (t) t.bookmarked = !t.bookmarked;
     },
     toggleCompleted(state, action) {
-      const task = state.tasks.find((t) => t.id === action.payload);
-      if (task) {
-        task.completed = !task.completed;
-      }
+      const t = state.tasks.find(t => t.id === action.payload);
+      if (t) t.completed = !t.completed;
     },
     setFilters(state, action) {
       state.filters = { ...state.filters, ...action.payload };
-      state.pagination.page = 1;  // Reset page on filter change
-    },
-    setSortBy(state, action) {
-      state.sortBy = action.payload;
+      state.pagination.page = 1;
     },
     setLoading(state) {
       state.status = 'loading';
@@ -65,6 +56,30 @@ const tasksSlice = createSlice({
     setError(state, action) {
       state.status = 'failed';
       state.error = action.payload;
+    },
+
+    // ---- notification flags ----
+    createSuccess(state) { state.createSuccess = true; },
+    updateSuccess(state) { state.updateSuccess = true; },
+    deleteSuccess(state) { state.deleteSuccess = true; },
+    resetNotifications(state) {
+      state.createSuccess = false;
+      state.updateSuccess = false;
+      state.deleteSuccess = false;
+    },
+
+    // ---- search & sort ----
+    setSearchQuery(state, action) {
+      state.searchQuery = action.payload;
+      state.pagination.page = 1;          // reset page on new search
+    },
+    setSortBy(state, action) {
+      state.sortBy = action.payload;
+      state.pagination.page = 1;          // reset page on new sort
+    },
+
+    loadMore(state) {
+      state.pagination.page += 1;
     },
   },
 });
@@ -77,10 +92,15 @@ export const {
   toggleBookmark,
   toggleCompleted,
   setFilters,
-  setSortBy,
-  loadMore,
   setLoading,
   setError,
+  createSuccess,
+  updateSuccess,
+  deleteSuccess,
+  resetNotifications,
+  setSearchQuery,
+  setSortBy,
+  loadMore,
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;
