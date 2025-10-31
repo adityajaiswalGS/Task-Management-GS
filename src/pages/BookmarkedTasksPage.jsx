@@ -6,18 +6,25 @@ import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 export default function BookmarkedTasksPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { tasks = [] } = useSelector(state => state.tasks);
+
+  // Grab **local Redux state** – NOT a fresh API call
+  const tasks = useSelector(state => state.tasks.tasks || []);
   const bookmarked = tasks.filter(t => t.bookmarked);
 
+  // **Only fetch once** – when the component mounts
   useEffect(() => {
-    dispatch({ type: 'tasks/fetchRequest' });
-  }, [dispatch]);
+    // If tasks are already in Redux (e.g. from Dashboard), skip fetch
+    if (tasks.length === 0) {
+      dispatch({ type: 'tasks/fetchRequest' });
+    }
+  }, [dispatch, tasks.length]);
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
         Bookmarked Tasks ({bookmarked.length})
       </Typography>
+
       {bookmarked.length === 0 ? (
         <Typography>No bookmarked tasks.</Typography>
       ) : (
@@ -26,11 +33,13 @@ export default function BookmarkedTasksPage() {
             <ListItem
               key={task.id}
               onClick={() => navigate(`/tasks/${task.id}`)}
-              sx={{ cursor: 'pointer' }}
+              sx={{ cursor: 'pointer', borderBottom: '1px solid #eee' }}
             >
               <ListItemText
-                primary={task.title}
-                secondary={task.subtitle}
+                primary={task.title || 'Untitled'}
+                secondary={`${task.subtitle || 'No description'} - ${
+                  task.priority || 'N/A'
+                } - ${task.date ? new Date(task.date).toLocaleDateString() : 'No date'}`}
               />
             </ListItem>
           ))}

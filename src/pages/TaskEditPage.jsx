@@ -108,7 +108,15 @@ export default function TaskEditPage() {
           onChange={(e) => setTags(e.target.value)}
           margin="normal"
         />
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+       <Button 
+  onClick={() => navigate('/dashboard')} 
+  variant="contained" 
+  sx={{ mt: 2 }}
+>
+  Back
+</Button>
+
+        <Button type="submit" variant="contained" sx={{ mt: 2 , ml: 2}}>
           Update Task
         </Button>
         <Button variant="outlined" color="error" onClick={() => setOpenConfirm(true)} sx={{ mt: 2, ml: 2 }}>

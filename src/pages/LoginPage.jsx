@@ -52,8 +52,8 @@ export default function LoginPage() {
           alignItems: 'center',
         }}
       >
-        <Paper elevation= {3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
+        <Paper elevation= {20} sx={{ p: 4, width: '100%' }}>
+          <Typography component="h1" variant="h5" align="center" gutterBottom>
             Task Management GS
           </Typography>
           <Typography variant="subtitle1" align="center" color="text.secondary" gutterBottom>
