@@ -66,8 +66,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="*" element={<ErrorPage />} />
-        </Routes>
+<Route path="*" element={<ErrorPage />} /></Routes>
       </Router>
     </ThemeProvider>
     </SnackbarProvider>
