@@ -38,7 +38,7 @@ export default function LoginPage() {
     setError('');
     dispatch({
       type: 'auth/loginRequest',
-      payload: { username },  // ← NO 'navigate' here!
+      payload: { username },  
     });
   };
 

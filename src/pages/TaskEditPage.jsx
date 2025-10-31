@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, TextField, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material';
-import ConfirmDialog from '../components/common/ConfirmDialog';  // Add this import!
+import ConfirmDialog from '../components/common/ConfirmDialog';  
 
 
 export default function TaskEditPage() {
@@ -30,25 +30,25 @@ export default function TaskEditPage() {
       setCompleted(task.completed || false);
       setBookmarked(task.bookmarked || false);
 
-      // Map number priority to string label
+     
       const priorityMap = { 1: 'low', 2: 'medium', 3: 'high' };
-      setPriority(priorityMap[task.priority] || 'low');  // If DB has numbers, map to string
+      setPriority(priorityMap[task.priority] || 'low');  //
     }
   }, [task]);
 
   const handleUpdate = (e) => {
     e.preventDefault();
 
-    // Map string label back to number for DB
+
     const priorityMap = { low: 1, medium: 2, high: 3 };
-    const numericPriority = priorityMap[priority] || 1;  // Default to low
+    const numericPriority = priorityMap[priority] || 1;
 
     const updatedTask = {
       id,
       title,
       subtitle,
       date: date ? new Date(date).toISOString() : null,
-      priority: numericPriority,  // Send as number to DB
+      priority: numericPriority,  
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       bookmarked,
       completed,

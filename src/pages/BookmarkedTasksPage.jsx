@@ -7,13 +7,13 @@ export default function BookmarkedTasksPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Grab **local Redux state** – NOT a fresh API call
+
   const tasks = useSelector(state => state.tasks.tasks || []);
   const bookmarked = tasks.filter(t => t.bookmarked);
 
-  // **Only fetch once** – when the component mounts
+
   useEffect(() => {
-    // If tasks are already in Redux (e.g. from Dashboard), skip fetch
+
     if (tasks.length === 0) {
       dispatch({ type: 'tasks/fetchRequest' });
     }

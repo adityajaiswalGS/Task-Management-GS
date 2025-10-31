@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const user = useSelector(s => s.auth.user);
   const isAuthenticated = useSelector(s => s.auth.isAuthenticated);
 
-  // ---- safe defaults ----
+
   const {
     status = 'idle',
     error = null,
@@ -58,7 +58,7 @@ export default function DashboardPage() {
       dispatch({ type: 'tasks/deleteRequest', payload: id });
     }
   };
-  
+
 const handleToggleBookmark = (id) => {
   dispatch({ type: 'tasks/toggleBookmark', payload: id });  // ← Triggers saga
 };

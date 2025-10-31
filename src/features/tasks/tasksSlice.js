@@ -54,7 +54,6 @@ const tasksSlice = createSlice({
       state.error = action.payload;
     },
 
-    // ---- notification flags ----
     createSuccess(state) { state.createSuccess = true; },
     updateSuccess(state) { state.updateSuccess = true; },
     deleteSuccess(state) { state.deleteSuccess = true; },
@@ -64,7 +63,6 @@ const tasksSlice = createSlice({
       state.deleteSuccess = false;
     },
 
-    // ---- search & sort ----
     setSearchQuery(state, action) {
       state.searchQuery = action.payload;
       state.pagination.page = 1;          // reset page on new search
