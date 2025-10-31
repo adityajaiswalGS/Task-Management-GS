@@ -1,4 +1,4 @@
-import { takeLatest, put, call, all } from 'redux-saga/effects';  // Ensure imports are here
+import { takeLatest, takeEvery ,put, call, all ,select} from 'redux-saga/effects';  // Ensure imports are here
 import {
   fetchTasks,
   createTask,
@@ -61,10 +61,30 @@ function* deleteTaskSaga(action) {
   }
 }
 
-// NAMED EXPORT – MUST HAVE 'export' HERE
+// for savingg bookmark part 
+
+function* toggleBookmarkSaga(action) {
+  try {
+    const taskId = action.payload;
+    const tasks = yield select(state => state.tasks.tasks);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const updatedTask = { ...task, bookmarked: !task.bookmarked };
+
+    // Send to MockAPI
+    const response = yield call(api.put, `/tasks/${taskId}`, updatedTask);
+
+    yield put(updateTaskInList(response.data));
+  } catch (err) {
+    console.error('Bookmark update failed:', err);
+  }
+}
+
 export function* watchTasks() {
   yield takeLatest('tasks/fetchRequest', fetchTasksSaga);
   yield takeLatest('tasks/createRequest', createTaskSaga);
   yield takeLatest('tasks/updateRequest', updateTaskSaga);
   yield takeLatest('tasks/deleteRequest', deleteTaskSaga);
+ yield takeEvery('tasks/toggleBookmark', toggleBookmarkSaga);
 }

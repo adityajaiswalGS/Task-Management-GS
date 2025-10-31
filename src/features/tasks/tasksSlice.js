@@ -10,12 +10,8 @@ const initialState = {
     dueDate: null,
     search: '',
   },
-  // ──> REMOVE THE DUPLICATES
-  // sortBy: 'date',           // <-- DELETE THIS LINE
-  // searchQuery: '',          // <-- DELETE THIS LINE
   pagination: { page: 1, limit: 5 },
 
-  // ──> ADD THESE TWO FIELDS (they are the only source of truth)
   searchQuery: '',
   sortBy: 'date',               // 'date' | 'priority'
 };

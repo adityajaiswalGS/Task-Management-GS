@@ -58,10 +58,10 @@ export default function DashboardPage() {
       dispatch({ type: 'tasks/deleteRequest', payload: id });
     }
   };
-
-  const handleToggleBookmark = (id) => {
-    dispatch({ type: 'tasks/toggleBookmark', payload: id });
-  };
+  
+const handleToggleBookmark = (id) => {
+  dispatch({ type: 'tasks/toggleBookmark', payload: id });  // ← Triggers saga
+};
 
   return (
     <Box sx={{ p: 10 }}>
