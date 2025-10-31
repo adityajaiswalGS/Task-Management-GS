@@ -1,21 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme } from '@mui/material/styles';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import TaskCreatePage from './pages/TaskCreatePage';  // New
+import TaskEditPage from './pages/TaskEditPage';  // New
+import AllTasksPage from './pages/AllTasksPage';  // New
+import BookmarkedTasksPage from './pages/BookmarkedTasksPage';  // New
 import ErrorPage from './pages/ErrorPage';
 import PrivateRoute from './components/common/PrivateRoute';
+import { useSelector } from 'react-redux';
+import { getTheme } from '../theme';
+import Navbar from './components/navbar/Navbar';
+import { SnackbarProvider, enqueueSnackbar } from 'notistack';
 
-// Temporary theme
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-});
 
 function App() {
+  const themeMode = useSelector((state) => state.ui.themeMode);
+  const theme = getTheme(themeMode);
   return (
+    <SnackbarProvider maxSnack={3}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
@@ -25,7 +29,40 @@ function App() {
             path="/dashboard"
             element={
               <PrivateRoute>
+                <Navbar/>
                 <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tasks/create"
+            element={
+              <PrivateRoute>
+                <TaskCreatePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tasks/:id"
+            element={
+              <PrivateRoute>
+                <TaskEditPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tasks/all"
+            element={
+              <PrivateRoute>
+                <AllTasksPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/bookmarks"
+            element={
+              <PrivateRoute>
+                <BookmarkedTasksPage />
               </PrivateRoute>
             }
           />
@@ -33,6 +70,7 @@ function App() {
         </Routes>
       </Router>
     </ThemeProvider>
+    </SnackbarProvider>
   );
 }
 
