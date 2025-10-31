@@ -12,8 +12,8 @@ import {
   removeTask,
   setLoading,
   setError,
+  updateSuccess,
 } from './tasksSlice';
-import { enqueueSnackbar } from 'notistack';
 import { createSuccess,deleteSuccess } from './tasksSlice';
 
 function* fetchTasksSaga() {

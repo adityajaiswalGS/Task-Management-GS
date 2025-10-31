@@ -23,8 +23,11 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       localStorage.removeItem('token');
     },
+    clearLoginSuccess(state) {
+  state.loginSuccess = false;  // ← reset
+},
   },
 });
 
-export const { loginSuccess, logout } = authSlice.actions;
+export const { loginSuccess, logout , clearLoginSuccess,} = authSlice.actions;
 export default authSlice.reducer;  // ← This is critical
