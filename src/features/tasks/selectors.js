@@ -20,14 +20,9 @@ export const selectFilteredAndSortedTasks = createSelector(
 
     // Sort by Priority wala partt
     if (tasksState.sortBy === 'priority') {
-      tasks.sort((a, b) => {
-        const priorityA = a.priority ?? 3;  
-        const priorityB = b.priority ?? 3;
-        return priorityB - priorityA;  
-      });
+      tasks.sort((a, b) => (b.priority ?? 3) - (a.priority ?? 3));  // High → Low
     }
 
-    // Sort by Dateee
     if (tasksState.sortBy === 'date') {
       tasks.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
     }
@@ -35,6 +30,7 @@ export const selectFilteredAndSortedTasks = createSelector(
     return tasks;
   }
 );
+
 
 // Pagination  parttt
 export const selectPaginatedTasks = createSelector(
