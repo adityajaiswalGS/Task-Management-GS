@@ -9,7 +9,7 @@ export default function useSnackbar() {
 
   // ---- Auth ----
   const auth = useSelector(state => state.auth);
-  const loginSuccess = auth.loginSuccess;   // flag set in authSlice
+  const loginSuccess = auth.loginSuccess; 
 
   // ---- Tasks ----
   const {
@@ -20,16 +20,15 @@ export default function useSnackbar() {
     error,
   } = useSelector(state => state.tasks);
 
-  // ---- Login toast (only once) ----
+  // ---- Login notiii ----
   useEffect(() => {
     if (loginSuccess) {
       enqueueSnackbar('Login successful!', { variant: 'success' });
-      // clear the flag immediately
       dispatch({ type: 'auth/clearLoginSuccess' });
     }
   }, [loginSuccess, dispatch]);
 
-  // ---- Task toasts (only once) ----
+  // ---- Task notiii ----
   useEffect(() => {
     if (createSuccess) {
       enqueueSnackbar('Task created successfully!', { variant: 'success' });

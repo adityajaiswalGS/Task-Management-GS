@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { logout } from '../auth/authSlice';
 
 const initialState = {
   tasks: [],
-  status: 'idle',               // idle | loading | succeeded | failed
+  status: 'idle',              
   error: null,
   filters: {
     status: 'all',
@@ -13,7 +14,7 @@ const initialState = {
   pagination: { page: 1, limit: 5 },
 
   searchQuery: '',
-  sortBy: 'date',               // 'date' | 'priority'
+  sortBy: 'date',             
 };
 
 const tasksSlice = createSlice({
@@ -38,6 +39,15 @@ const tasksSlice = createSlice({
       const t = state.tasks.find(t => t.id === action.payload);
       if (t) t.bookmarked = !t.bookmarked;
     },
+
+    
+
+toggleBookmarkSuccess(state, action) {
+  const task = state.tasks.find(t => t.id === action.payload.id);
+  if (task) {
+    task.bookmarked = action.payload.bookmarked;
+  }
+},
     toggleCompleted(state, action) {
       const t = state.tasks.find(t => t.id === action.payload);
       if (t) t.completed = !t.completed;
@@ -65,25 +75,42 @@ const tasksSlice = createSlice({
 
     setSearchQuery(state, action) {
       state.searchQuery = action.payload;
-      state.pagination.page = 1;          // reset page on new search
+      state.pagination.page = 1;          
     },
     setSortBy(state, action) {
       state.sortBy = action.payload;
-      state.pagination.page = 1;          // reset page on new sort
+      state.pagination.page = 1;          
     },
 
     loadMore(state) {
       state.pagination.page += 1;
     },
+    optimisticBookmark(state, action) {
+  const task = state.tasks.find(t => t.id === action.payload);
+  if (task) task.bookmarked = !task.bookmarked;
+},
+  },
+
+ extraReducers: (builder) => {
+    builder.addCase(logout, (state) => {
+      state.tasks = [];
+      state.status = 'idle';
+      state.pagination.page = 1;
+    });
   },
 });
+
+
+
 
 export const {
   setTasks,
   addTask,
   updateTaskInList,
+  optimisticBookmark,
   removeTask,
   toggleBookmark,
+  toggleBookmarkSuccess,   
   toggleCompleted,
   setFilters,
   setLoading,
@@ -96,5 +123,4 @@ export const {
   setSortBy,
   loadMore,
 } = tasksSlice.actions;
-
 export default tasksSlice.reducer;

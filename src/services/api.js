@@ -5,11 +5,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-// const api = axios.create({
-//   baseURL: import.meta.env.VITE_API_URL,  // Your MockAPI endpoint from .env
-// });
-
-
 
 // Add token interceptor (for protected API calls)
 api.interceptors.request.use((config) => {

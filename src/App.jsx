@@ -5,7 +5,6 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import TaskCreatePage from './pages/TaskCreatePage';  // New
 import TaskEditPage from './pages/TaskEditPage';  // New
-import AllTasksPage from './pages/AllTasksPage';  // New
 import BookmarkedTasksPage from './pages/BookmarkedTasksPage';  // New
 import ErrorPage from './pages/ErrorPage';
 import PrivateRoute from './components/common/PrivateRoute';
@@ -47,14 +46,6 @@ function App() {
             element={
               <PrivateRoute>
                 <TaskEditPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/tasks/all"
-            element={
-              <PrivateRoute>
-                <AllTasksPage />
               </PrivateRoute>
             }
           />

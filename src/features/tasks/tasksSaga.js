@@ -1,10 +1,5 @@
-import { takeLatest, takeEvery ,put, call, all ,select} from 'redux-saga/effects';  // Ensure imports are here
-import {
-  fetchTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from '../../services/api';
+import { takeLatest, put, call, select } from 'redux-saga/effects';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../../services/api';
 import {
   setTasks,
   addTask,
@@ -12,9 +7,14 @@ import {
   removeTask,
   setLoading,
   setError,
+  createSuccess,
   updateSuccess,
+  deleteSuccess,
+  toggleBookmarkSuccess,
+  optimisticBookmark
 } from './tasksSlice';
-import { createSuccess,deleteSuccess } from './tasksSlice';
+
+// === WORKER SAGAS ===
 
 function* fetchTasksSaga() {
   try {
@@ -23,7 +23,6 @@ function* fetchTasksSaga() {
     yield put(setTasks(response.data));
   } catch (error) {
     yield put(setError(error.message));
-    console.error('Fetch tasks failed:', error);
   }
 }
 
@@ -34,34 +33,29 @@ function* createTaskSaga(action) {
     yield put(createSuccess());
   } catch (error) {
     yield put(setError(error.message));
-    console.error('Create task failed:', error);
   }
 }
 
 function* updateTaskSaga(action) {
   try {
-    const response = yield call(updateTask, action.payload.id, action.payload);
+    const { id, ...data } = action.payload;
+    const response = yield call(updateTask, id, data);
     yield put(updateTaskInList(response.data));
     yield put(updateSuccess());
   } catch (error) {
     yield put(setError(error.message));
-    console.error('Update task failed:', error);
   }
 }
 
 function* deleteTaskSaga(action) {
   try {
-    yield put(deleteSuccess());
     yield call(deleteTask, action.payload);
     yield put(removeTask(action.payload));
-
+    yield put(deleteSuccess());
   } catch (error) {
     yield put(setError(error.message));
-    console.error('Delete task failed:', error);
   }
 }
-
-// for savingg bookmark part 
 
 function* toggleBookmarkSaga(action) {
   try {
@@ -70,21 +64,32 @@ function* toggleBookmarkSaga(action) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    const updatedTask = { ...task, bookmarked: !task.bookmarked };
+    const newBookmarked = !task.bookmarked;
 
-    // Send to MockAPI
-    const response = yield call(api.put, `/tasks/${taskId}`, updatedTask);
+    // Step 1: Instant UI update
+    yield put(optimisticBookmark(taskId));
 
-    yield put(updateTaskInList(response.data));
-  } catch (err) {
-    console.error('Bookmark update failed:', err);
+    // Step 2: Save to API
+    const updatedTask = { ...task, bookmarked: newBookmarked };
+    const response = yield call(updateTask, taskId, updatedTask);
+
+    // Step 3: Confirm
+    yield put(toggleBookmarkSuccess({
+      id: taskId,
+      bookmarked: response.data.bookmarked,
+    }));
+  } catch (error) {
+    // Revert on fail
+    yield put(optimisticBookmark(action.payload));
+    yield put(setError('Bookmark failed'));
   }
 }
 
+// === WATCHER ===
 export function* watchTasks() {
   yield takeLatest('tasks/fetchRequest', fetchTasksSaga);
   yield takeLatest('tasks/createRequest', createTaskSaga);
   yield takeLatest('tasks/updateRequest', updateTaskSaga);
   yield takeLatest('tasks/deleteRequest', deleteTaskSaga);
- yield takeEvery('tasks/toggleBookmark', toggleBookmarkSaga);
+  yield takeLatest('tasks/toggleBookmarkRequest', toggleBookmarkSaga);
 }

@@ -29,6 +29,7 @@ export default function TaskCreatePage() {
 
   return (
     <Box sx={{ p: 3 }}>
+    
       <Typography variant="h5" gutterBottom>
         Create New Task
       </Typography>
@@ -74,6 +75,13 @@ export default function TaskCreatePage() {
           onChange={(e) => setTags(e.target.value)}
           margin="normal"
         />
+        <Button 
+  onClick={() => navigate('/dashboard')} 
+  variant="contained" 
+  sx={{ mt: 2 , mr: 2}}
+>
+  Back
+</Button>
         <Button type="submit" variant="contained" sx={{ mt: 2 }}>
           Create Task
         </Button>

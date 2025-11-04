@@ -15,8 +15,8 @@ import useSnackbar from '../hooks/useSnackbar';
 
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin');
   const [error, setError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function LoginPage() {
  useSnackbar();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated ) {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
@@ -91,7 +91,7 @@ export default function LoginPage() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              Sign In 
             </Button>
           </Box>
         </Paper>

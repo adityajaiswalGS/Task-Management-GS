@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   themeMode: localStorage.getItem('themeMode') || 'light',
-  // Add more preferences later (e.g., last filters)
+
 };
 
 const uiSlice = createSlice({
@@ -15,7 +15,7 @@ const uiSlice = createSlice({
     },
   },
   showSnackbar(state, action) {
-  // But since Saga can't call enqueue, dispatch a Redux action and handle in component.
+ 
 }
 });
 

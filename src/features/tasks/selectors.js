@@ -1,30 +1,47 @@
+// src/features/tasks/selectors.js
 import { createSelector } from '@reduxjs/toolkit';
 
-export const selectFilteredAndSortedTasks = createSelector(
-  (state) => state.tasks.tasks,
-  (state) => state.tasks.searchQuery,
-  (state) => state.tasks.sortBy,
-  (tasks, searchQuery, sortBy) => {
-    let filtered = tasks || [];
+const selectTasksState = (state) => state.tasks;
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(task =>
-        task.title?.toLowerCase().includes(query)
+
+export const selectFilteredAndSortedTasks = createSelector(
+  [selectTasksState],
+  (tasksState) => {
+    let tasks = [...tasksState.tasks];
+
+
+    if (tasksState.searchQuery) {
+      const query = tasksState.searchQuery.toLowerCase();
+      tasks = tasks.filter(t =>
+        t.title?.toLowerCase().includes(query) ||
+        t.subtitle?.toLowerCase().includes(query)
       );
     }
 
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === 'date') {
-        return new Date(b.date || 0) - new Date(a.date || 0);
-      }
-      if (sortBy === 'priority') {
-        const order = { high: 0, medium: 1, low: 2 };
-        return (order[a.priority] ?? 3) - (order[b.priority] ?? 3);
-      }
-      return 0;
-    });
+    // Sort by Priority wala partt
+    if (tasksState.sortBy === 'priority') {
+      tasks.sort((a, b) => {
+        const priorityA = a.priority ?? 3;  
+        const priorityB = b.priority ?? 3;
+        return priorityB - priorityA;  
+      });
+    }
 
-    return sorted;
+    // Sort by Dateee
+    if (tasksState.sortBy === 'date') {
+      tasks.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    }
+
+    return tasks;
+  }
+);
+
+// Pagination  parttt
+export const selectPaginatedTasks = createSelector(
+  [selectFilteredAndSortedTasks, selectTasksState],
+  (filteredTasks, tasksState) => {
+    const { page, limit } = tasksState.pagination;
+    const end = page * limit;
+    return filteredTasks.slice(0, end);
   }
 );

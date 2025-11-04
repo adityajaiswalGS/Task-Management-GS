@@ -21,9 +21,10 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import useSnackbar from '../hooks/useSnackbar';
-import { selectFilteredAndSortedTasks } from '../features/tasks/selectors';
-import { setSearchQuery, setSortBy } from '../features/tasks/tasksSlice';
+import { selectPaginatedTasks ,selectFilteredAndSortedTasks } from '../features/tasks/selectors';  // ← NEW
+import { setSearchQuery, setSortBy, loadMore } from '../features/tasks/tasksSlice';  // ← ADD loadMore
 
 export default function DashboardPage() {
   useSnackbar();
@@ -33,7 +34,6 @@ export default function DashboardPage() {
   const user = useSelector(s => s.auth.user);
   const isAuthenticated = useSelector(s => s.auth.isAuthenticated);
 
-
   const {
     status = 'idle',
     error = null,
@@ -41,15 +41,21 @@ export default function DashboardPage() {
     sortBy = 'date',
   } = useSelector(s => s.tasks || {});
 
-  const allTasks = useSelector(selectFilteredAndSortedTasks);   // filtered + sorted
+  const paginatedTasks = useSelector(selectPaginatedTasks);  // ← PAGINATED
+const allFilteredTasks = useSelector(selectFilteredAndSortedTasks);  
+  const { pagination } = useSelector(s => s.tasks);
 
-  useEffect(() => {
-    dispatch({ type: 'tasks/fetchRequest' });
-  }, [dispatch]);
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
+
+ useEffect(() => {
+  if (isAuthenticated) {
+    dispatch({ type: 'tasks/fetchRequest' });
+  }
+}, [isAuthenticated, dispatch]);
+
 
   const handleLogout = () => dispatch({ type: 'auth/logoutRequest' });
 
@@ -59,28 +65,42 @@ export default function DashboardPage() {
     }
   };
 
-const handleToggleBookmark = (id) => {
-  dispatch({ type: 'tasks/toggleBookmark', payload: id });  // ← Triggers saga
+  const handleToggleBookmark = (id) => {
+    dispatch({ type: 'tasks/toggleBookmarkRequest', payload: id });
+  };
+
+  const priorityText = (num) => {
+  const map = { 0: 'Low', 1: 'Medium', 2: 'High' };
+  return map[num] || 'N/A';
 };
 
   return (
-    <Box sx={{ p: 10 }}>
-      {/* <Typography variant="h" sx={{ display: 'flex',mt:-15 }} gutterBottom>
-        Welcome, {user?.name || 'User'}!
-      </Typography> */}
-      <Button variant="outlined" onClick={handleLogout} sx={{ marginLeft : 145 , marginTop: -15 }}>
-        Logout
-      </Button>
+    <Box sx={{ p: 3 }}>
+      {/* Welcome + Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        {/* <Typography variant="h5">Welcome, {user?.name || 'User'}!</Typography> */}
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => dispatch({ type: 'tasks/fetchRequest' })}
+            startIcon={<RefreshIcon />}
+          >
+            Reload
+          </Button>
+          <Button variant="contained" color="error" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Box>
+      </Box>
 
       {/* Search & Sort */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, mt:-10, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
         <TextField
           size="small"
-          placeholder="Search tasks heree..."
+          placeholder="Search tasks..."
           value={searchQuery}
           onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-          sx={{ width: 800 }}
-          variant="outlined"
+          sx={{ width: 400 }}
         />
         <FormControl size="small" sx={{ minWidth: 140 }}>
           <InputLabel>Sort By</InputLabel>
@@ -96,82 +116,87 @@ const handleToggleBookmark = (id) => {
       </Box>
 
       <Typography variant="h6" gutterBottom>
-        All Tasks ({allTasks.length})
+        All Tasks ({allFilteredTasks.length})
       </Typography>
 
       {status === 'loading' && <CircularProgress />}
-      {status === 'failed' && error && (
-        <Typography color="error">Error: {error}</Typography>
-      )}
-      {status === 'succeeded' && allTasks.length === 0 && (
-        <Typography>No tasks yet.</Typography>
+      {status === 'failed' && error && <Typography color="error">Error: {error}</Typography>}
+      {status === 'succeeded' && allFilteredTasks.length === 0 && <Typography>No tasks yet.</Typography>}
+
+      {status === 'succeeded' && allFilteredTasks.length > 0 && (
+        <>
+          <List>
+            {paginatedTasks.map(task => (
+              <ListItem
+              secondary={`... - ${priorityText(task.priority)} - ...`}
+                key={task.id}
+                onClick={() => navigate(`/tasks/${task.id}`)}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'action.hover' },
+                  borderBottom: '1px solid #eee',
+                }}
+              >
+                <ListItemText
+                  primary={task.title || 'Untitled'}
+                  secondary={`${task.subtitle || 'No description'} - ${
+                    task.priority || 'N/A'
+                  } - ${task.date ? new Date(task.date).toLocaleDateString() : 'No date'}`}
+                />
+                <ListItemSecondaryAction>
+                  <Tooltip title={task.bookmarked ? 'Remove bookmark' : 'Bookmark'}>
+                    <IconButton
+                      edge="end"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleToggleBookmark(task.id);
+                      }}
+                    >
+                      {task.bookmarked ? <BookmarkIcon color="primary" /> : <BookmarkBorderIcon />}
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      edge="end"
+                      color="error"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(task.id);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+
+          {/* Load More */}
+          {paginatedTasks.length < allFilteredTasks.length && (
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Button variant="outlined" onClick={() => dispatch(loadMore())}>
+                Load More ({paginatedTasks.length} of {allFilteredTasks.length})
+              </Button>
+            </Box>
+          )}
+        </>
       )}
 
-      {status === 'succeeded' && allTasks.length > 0 && (
-        <List>
-          {allTasks.map(task => (
-            <ListItem
-              key={task.id}
-              onClick={() => navigate(`/tasks/${task.id}`)}
-              sx={{
-                cursor: 'pointer',
-                '&:hover': { bgcolor: 'action.hover' },
-                borderBottom: '1px solid #eee',
-              }}
-            >
-              <ListItemText
-                primary={task.title || 'Untitled'}
-                secondary={`${task.subtitle || 'No description'} - ${
-                  task.priority || 'N/A'
-                } - ${task.date ? new Date(task.date).toLocaleDateString() : 'No date'}`}
-              />
-              <ListItemSecondaryAction>
-                <Tooltip title={task.bookmarked ? 'Remove bookmark' : 'Bookmark'}>
-                  <IconButton
-                    edge="end"
-                    onClick={e => {
-                      e.stopPropagation();               // prevent navigation
-                      handleToggleBookmark(task.id);
-                    }}
-                  >
-                    {task.bookmarked ? (
-                      <BookmarkIcon color="primary" />
-                    ) : (
-                      <BookmarkBorderIcon />
-                    )}
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Delete">
-                  <IconButton
-                    edge="end"
-                    color="error"
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleDelete(task.id);
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-      )}
-
-      {/* ---------- NAVIGATION ---------- */}
-      <Box sx={{ mt: 3 }}>
+      {/* Navigation */}
+      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
         <Button variant="contained" onClick={() => navigate('/tasks/create')}>
           Add New Task
         </Button>
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/bookmarks')}
-          sx={{ ml: 2 }}
-        >
-          Bookmarked Tasks
-        </Button>
+      <Button
+    variant="outlined"
+    onClick={() => {
+      dispatch({ type: 'tasks/fetchRequest' });
+      navigate('/bookmarks');
+    }}
+  >
+    Bookmarked Tasks
+  </Button>
       </Box>
     </Box>
   );

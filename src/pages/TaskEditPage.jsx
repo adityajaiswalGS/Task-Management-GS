@@ -31,8 +31,19 @@ export default function TaskEditPage() {
       setBookmarked(task.bookmarked || false);
 
      
-      const priorityMap = { 1: 'low', 2: 'medium', 3: 'high' };
-      setPriority(priorityMap[task.priority] || 'low');  //
+      const priorityMap = {
+  low: 0,
+  medium: 1,
+  high: 2,
+};
+
+const handleSubmit = (data) => {
+  const payload = {
+    ...data,
+    priority: priorityMap[data.priority],  // ← Convert to number
+  };
+  dispatch({ type: 'tasks/createRequest', payload });
+};
     }
   }, [task]);
 
